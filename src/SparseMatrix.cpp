@@ -201,7 +201,7 @@ __global__ void kernel_to_ell_col(local_int_t m,
     {
         if(sdata[threadIdx.y] == true)
         {
-            halo_row_ind[atomicAdd(halo_rows, 1)] = row;
+            halo_row_ind[(local_int_t) atomicAdd((unsigned long long*)halo_rows, 1)] = row;
         }
     }
 #endif

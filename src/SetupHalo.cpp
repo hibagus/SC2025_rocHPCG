@@ -214,7 +214,7 @@ __global__ void kernel_setup_halo(local_int_t m,
             neighbors[neighborRankId] = ipx + ipy * npx + ipz * npy * npx;
 
             // Count up the global column that we have to receive by a neighbor using atomics
-            local_int_t idx = atomicAdd(&nrecv_per_rank[neighborRankId], 1);
+            local_int_t idx = (local_int_t) atomicAdd((unsigned long long*)&nrecv_per_rank[neighborRankId], 1);
 
             // Halo indices array stores the global id, so we can easily access the matrix
             // column array at the halo position
@@ -249,7 +249,7 @@ __global__ void kernel_setup_halo(local_int_t m,
     if(sdata[threadIdx.x + threadIdx.y * BLOCKSIZEX] == true)
     {
         // If current row has been marked for sending, store its index
-        local_int_t idx = atomicAdd(&nsend_per_rank[threadIdx.x], 1);
+        local_int_t idx = (local_int_t) atomicAdd((unsigned long long*)&nsend_per_rank[threadIdx.x], 1);
         send_indices[threadIdx.x * max_sending + idx] = currentLocalRow;
     }
 }

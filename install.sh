@@ -188,7 +188,7 @@ install_openmpi( )
 {
   if [ ! -d "./deps/ucx" ]; then
     mkdir -p deps && cd deps
-    git clone --branch v1.13.1 https://github.com/openucx/ucx.git ucx
+    git clone --branch v1.18.1 https://github.com/openucx/ucx.git ucx
     cd ucx; ./autogen.sh; ./autogen.sh #why do we have to run this twice?
     mkdir build; cd build
     ../contrib/configure-opt --prefix=${PWD}/../ --with-rocm=${with_rocm} --without-knem --without-cuda --without-java
@@ -197,9 +197,9 @@ install_openmpi( )
 
   if [ ! -d "./deps/openmpi" ]; then
     mkdir -p deps && cd deps
-    git clone --branch v4.1.4 https://github.com/open-mpi/ompi.git openmpi
+    git clone --branch v5.0.8 --recursive https://github.com/open-mpi/ompi.git openmpi
     cd openmpi; ./autogen.pl; mkdir build; cd build
-    ../configure --prefix=${PWD}/../ --with-ucx=${PWD}/../../ucx --without-verbs
+    ../configure --prefix=${PWD}/../ --with-ucx=${PWD}/../../ucx --with-rocm=${with_rocm} --enable-mca-no-build=btl-uct
     make -j$(nproc); make install; cd ../../..
   fi
 }
@@ -240,10 +240,10 @@ build_reference=false
 build_test=false
 with_rocm=/opt/rocm
 with_mpi=deps/openmpi
-gpu_aware_mpi=OFF
+gpu_aware_mpi=ON
 with_omp=ON
-with_memmgmt=ON
-with_memdefrag=ON
+with_memmgmt=OFF
+with_memdefrag=OFF
 with_roctx=false
 
 # #################################################

@@ -1,1 +1,1 @@
-./mpirun_rochpcg -N 1 -X ${1} -Y ${1} -Z ${1} -T 3600 2>&1 | tee ./outputs_run/run_hpcg_single_GPU_${1}.out
+./mpirun_rochpcg -N 1 -X ${1} -Y ${1} -Z ${1} -T 3600 2>&1 | tee ./run_hpcg_single_GPU_${1}.out

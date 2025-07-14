@@ -36,8 +36,14 @@ tags
 .vscode
 
 # build-in-source directory
-build
+build/release
+
+# third party dependency
+deps
 
 # doc directory
 docBin
 _build
+
+# misc. files
+ltmain.sh

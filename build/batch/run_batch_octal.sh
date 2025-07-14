@@ -1,0 +1,4 @@
+./run_workload_monitor_octal.sh "./amd_mi300x_power_clock_temp_octal.sh 1 run_HPCG_Octal_624" "./amd_mi300x_hbm3_octal.sh 1 run_HPCG_Octal_624" "./amd_mi300x_xgmi_octal.sh 1 run_HPCG_Octal_624"   "./run_octal_GPU.sh 624"
+./run_workload_monitor_octal.sh "./amd_mi300x_power_clock_temp_octal.sh 1 run_HPCG_Octal_560" "./amd_mi300x_hbm3_octal.sh 1 run_HPCG_Octal_560" "./amd_mi300x_xgmi_octal.sh 1 run_HPCG_Octal_560"   "./run_octal_GPU.sh 560"
+./run_workload_monitor_octal.sh "./amd_mi300x_power_clock_temp_octal.sh 1 run_HPCG_Octal_280" "./amd_mi300x_hbm3_octal.sh 1 run_HPCG_Octal_280" "./amd_mi300x_xgmi_octal.sh 1 run_HPCG_Octal_280"   "./run_octal_GPU.sh 280"
+./run_workload_monitor_octal.sh "./amd_mi300x_power_clock_temp_octal.sh 1 run_HPCG_Octal_140" "./amd_mi300x_hbm3_octal.sh 1 run_HPCG_Octal_140" "./amd_mi300x_xgmi_octal.sh 1 run_HPCG_Octal_140"   "./run_octal_GPU.sh 140"

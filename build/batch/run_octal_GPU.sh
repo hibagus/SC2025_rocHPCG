@@ -1,0 +1,1 @@
+./mpirun_rochpcg -N 8 -X ${1} -Y ${1} -Z ${1} -T 3600 2>&1 | tee ./outputs_run/run_hpcg_octal_GPU_${1}.out

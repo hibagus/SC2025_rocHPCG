@@ -1,0 +1,156 @@
+#!/usr/bin/env bash
+# Author: Bagus Hanindhito
+# Adopted from rocHPL script by Noel Chalmers
+
+# set -x #echo on
+
+# #################################################
+# helper functions
+# #################################################
+function display_help()
+{
+  echo "rocHPCG MPI run helper script"
+  echo "./mpirun_rochpcg "
+  echo "    [-N]    Number of GPUs to run                         "
+  echo "    [-X]    First dimension of local grid; must be in     "
+  echo "            multiple of 8                                 "
+  echo "    [-Y]    Second dimension of local grid; must be in    "
+  echo "            multiple of 8                                 "
+  echo "    [-Z]    Third dimension of local grid; must be in     "
+  echo "            multiple of 8                                 "
+  echo "    [-T]    Target runtime in Seconds. Official benchmarks"
+  echo "            runs must run for at least 1800s to capture   "
+  echo "            sustained performance                         "
+  echo "    [-h]    prints this help message                      "
+}
+
+# This function is helpful for dockerfiles that do not have sudo installed, but the default user is root
+# true is a system command that completes successfully, function returns success
+# prereq: ${ID} must be defined before calling
+supported_distro( )
+{
+  if [ -z ${ID+foo} ]; then
+    printf "supported_distro(): \$ID must be set\n"
+    exit 2
+  fi
+
+  case "${ID}" in
+    debian|linuxmint|ubuntu|centos|rhel|fedora|sles)
+        true
+        ;;
+    *)  printf "This script is currently supported on Debian, Linuxmint, Ubuntu, CentOS, RHEL, Fedora and SLES\n"
+        exit 2
+        ;;
+  esac
+}
+
+# #################################################
+# Pre-requisites check
+# #################################################
+# Exit code 0: alls well
+# Exit code 1: problems with getopt
+# Exit code 2: problems with supported platforms
+
+# check if getopt command is installed
+type getopt > /dev/null
+if [[ $? -ne 0 ]]; then
+  echo "This script uses getopt to parse arguments; try installing the util-linux package";
+  exit 1
+fi
+
+# os-release file describes the system
+if [[ -e "/etc/os-release" ]]; then
+  source /etc/os-release
+else
+  echo "This script depends on the /etc/os-release file"
+  exit 2
+fi
+
+# The following function exits script if an unsupported distro is detected
+supported_distro
+
+# #################################################
+# global variables
+# #################################################
+# Grab path from default install script.
+root_dir=${PWD%/*/*}
+rochpcg_bin=${root_dir}/build/release/bin/rochpcg
+mpi_bin=${root_dir}/deps/openmpi/bin/mpiexec
+
+N=1
+X=16
+Y=16
+Z=16
+T=1
+
+# #################################################
+# MPI Args
+# #################################################
+
+#Default MPI options
+mpi_args=
+
+#Check if using OpenMPI
+if [[ $(${mpi_bin} --version | grep "open-mpi") ]]; then
+  mpi_args+=" --map-by node --rank-by slot --bind-to none "
+
+  #Check if this is OpenMPI+UCX
+  ompi_info=$(dirname ${mpi_bin})/ompi_info
+  if [[ $(${ompi_info} | grep "MCA pml: ucx") ]]; then
+    # ucx-specific args
+    mpi_args="--mca pml ucx --mca btl ^vader,tcp,openib,uct ${mpi_args}"
+  fi
+fi
+
+# #################################################
+# Parameter parsing
+# #################################################
+
+# check if we have a modern version of getopt that can handle whitespace and long parameters
+getopt -T
+if [[ $? -eq 4 ]]; then
+  GETOPT_PARSE=$(getopt --name "${0}", --options N:X:Y:Z:T:h -- "$@")
+else
+  echo "Need a new version of getopt"
+  exit 1
+fi
+
+if [[ $? -ne 0 ]]; then
+  echo "getopt invocation failed; could not parse the command line";
+  exit 1
+fi
+
+eval set -- "${GETOPT_PARSE}"
+
+while true; do
+  case "${1}" in
+    -h)
+        display_help
+        exit 0
+        ;;
+    -N)
+        N=${2}
+        shift 2 ;;
+    -X)
+        X=${2}
+        shift 2 ;;
+    -Y)
+        Y=${2}
+        shift 2 ;;
+    -Z)
+        Z=${2}
+        shift 2 ;;
+    -T)
+        T=${2}
+        shift 2 ;;
+    --) shift ; break ;;
+    *)  echo "Unexpected command line parameter received; aborting";
+        exit 1
+        ;;
+  esac
+done
+
+rochpcg_args="${X} ${Y} ${Z} ${T}"
+
+#run
+${mpi_bin} -np ${N} ${mpi_args} ${rochpcg_bin} ${rochpcg_args}
